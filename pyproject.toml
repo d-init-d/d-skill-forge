@@ -1,6 +1,6 @@
 [project]
 name = "d-skill-forge"
-version = "0.1.0"
+version = "0.1.1"
 description = "Distill procedural skills from frontier model traces into reusable SKILL.md artifacts."
 authors = [{ name = "d-init-d" }]
 license = "Apache-2.0"

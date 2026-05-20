@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from skillforge.cli.main import cli
 from skillforge.models.run import RunManifest, TaskResult
 from skillforge.models.trace import ContentBlock, Message, Score, Trace
+from skillforge.skill_io import parse
 
 
 def _create_run_dir(tmp_path: Path) -> Path:
@@ -49,8 +50,8 @@ def _create_run_dir(tmp_path: Path) -> Path:
     return run_dir
 
 
-def test_extract_with_mock_reports_parse_error(tmp_path: Path) -> None:
-    """Extract with mock provider fails gracefully when output isn't valid SKILL.md."""
+def test_extract_with_mock_produces_valid_skill(tmp_path: Path) -> None:
+    """Extract with mock provider produces a parseable SKILL.md."""
     run_dir = _create_run_dir(tmp_path)
     out_path = tmp_path / "output" / "SKILL.md"
 
@@ -70,9 +71,14 @@ def test_extract_with_mock_reports_parse_error(tmp_path: Path) -> None:
         ],
     )
 
-    # Mock provider doesn't produce valid SKILL.md, so extraction fails gracefully
-    assert result.exit_code != 0
-    assert "Extraction failed" in result.output or "Error" in result.output
+    assert result.exit_code == 0, f"extract failed: {result.output}"
+    assert out_path.exists()
+    content = out_path.read_text()
+    assert content.startswith("---\n"), "missing YAML frontmatter"
+    # Round-trip: parse with skill_io and confirm fields populated
+    skill = parse(content)
+    assert skill.frontmatter.name
+    assert skill.frontmatter.description
 
 
 def test_extract_empty_run_exits_nonzero(tmp_path: Path) -> None:

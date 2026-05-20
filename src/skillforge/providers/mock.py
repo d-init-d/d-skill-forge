@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import ClassVar
 
+from skillforge.extractor._prompts import REFLECTIVE_EXTRACTION_MARKER
 from skillforge.models.trace import ContentBlock, TokenUsage
 from skillforge.providers import register
 from skillforge.providers.base import CompletionRequest, CompletionResponse, Provider
@@ -48,6 +50,55 @@ def _deterministic_seed(model: str, prompt: str) -> int:
     return int(h[:8], 16)
 
 
+def _build_mock_skill_md(prompt_text: str) -> str:
+    """Build a deterministic valid SKILL.md from extraction prompt content."""
+    # Extract task IDs from the prompt for determinism
+    task_ids = re.findall(r"task:\s*([^\s\)]+)", prompt_text)
+    seed_input = "|".join(sorted(task_ids)) if task_ids else prompt_text[:200]
+    seed = hashlib.sha256(seed_input.encode()).hexdigest()[:12]
+
+    return f"""---
+name: mock-extracted-{seed[:8]}
+description: Deterministic mock skill produced by MockProvider for testing.
+version: "0.1.0"
+source_model: mock-strong
+extracted_from:
+  total_traces: {len(task_ids) or 3}
+  passed_traces: {len(task_ids) or 3}
+  failed_traces: 0
+  extractor: "reflective@0.1"
+  extracted_at: "2024-01-01T00:00:00Z"
+triggers:
+  - mock
+  - testing
+domains:
+  - general
+license: Apache-2.0
+---
+
+## When to use
+
+Use this skill for tasks similar to those in the source corpus.
+
+## Procedure
+
+1. Read the input carefully.
+2. Identify the core problem pattern.
+3. Apply the deterministic mock heuristic.
+4. Return the answer in the expected format.
+
+## Examples
+
+- Given a math question, compute the answer step by step.
+- Given a code question, produce working code.
+
+## Anti-patterns
+
+- Do not guess without analyzing the input.
+- Do not skip validation of the output format.
+"""
+
+
 @register("mock")
 class MockProvider(Provider):
     """Deterministic mock provider for testing without API calls."""
@@ -63,6 +114,22 @@ class MockProvider(Provider):
         Returns:
             A deterministic completion response.
         """
+        # Check for extraction marker in messages
+        full_text = ""
+        for msg in request.messages:
+            for block in msg.content:
+                if block.type == "text" and block.text:
+                    full_text += block.text
+
+        if REFLECTIVE_EXTRACTION_MARKER in full_text:
+            skill_md = _build_mock_skill_md(full_text)
+            return CompletionResponse(
+                content=[ContentBlock(type="text", text=skill_md)],
+                model=request.model,
+                usage=TokenUsage(input_tokens=200, output_tokens=300, thinking_tokens=50),
+                stop_reason="end_turn",
+            )
+
         last_user_msg = ""
         for msg in reversed(request.messages):
             if msg.role == "user":

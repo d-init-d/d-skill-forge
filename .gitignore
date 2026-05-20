@@ -40,3 +40,12 @@ Thumbs.db
 
 # Pyright
 pyrightconfig.json
+
+# Local scaffolding artifacts (not part of the repo)
+d-skill-forge-kiro-bundle/
+d-skill-forge-kiro/
+/tasks.md
+
+# Night-run plan files (local only)
+d-skill-forge-night-run-plan.md
+d-skill-forge-fix-plan.md

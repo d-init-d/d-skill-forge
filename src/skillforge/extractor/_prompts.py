@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+REFLECTIVE_EXTRACTION_MARKER = "<<SKILLFORGE_REFLECTIVE_EXTRACTION_V1>>"
+
 REFLECTIVE_EXTRACTION_PROMPT_V1 = """\
+{marker}
 You are a skill extraction engine. Analyze the following execution traces and \
 distill a reusable procedural skill in SKILL.md format.
 

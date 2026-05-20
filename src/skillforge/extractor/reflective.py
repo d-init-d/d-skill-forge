@@ -10,7 +10,7 @@ from skillforge.paths import now_iso
 from skillforge.providers.base import CompletionRequest, Provider
 from skillforge.skill_io import parse
 
-from ._prompts import REFLECTIVE_EXTRACTION_PROMPT_V1
+from ._prompts import REFLECTIVE_EXTRACTION_MARKER, REFLECTIVE_EXTRACTION_PROMPT_V1
 from .base import Extractor
 
 
@@ -48,6 +48,7 @@ class ReflectiveExtractor(Extractor):
         traces_text = self._format_traces(sampled)
 
         prompt_text = REFLECTIVE_EXTRACTION_PROMPT_V1.format(
+            marker=REFLECTIVE_EXTRACTION_MARKER,
             run_id=manifest.run_id,
             model=model,
             domain="general",
