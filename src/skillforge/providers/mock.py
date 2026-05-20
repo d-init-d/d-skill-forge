@@ -8,6 +8,7 @@ from typing import ClassVar
 
 from skillforge.extractor._prompts import (
     CONTRASTIVE_EXTRACTION_MARKER,
+    ITERATIVE_EXTRACTION_MARKER,
     REFLECTIVE_EXTRACTION_MARKER,
 )
 from skillforge.models.trace import ContentBlock, TokenUsage
@@ -134,6 +135,15 @@ class MockProvider(Provider):
             )
 
         if CONTRASTIVE_EXTRACTION_MARKER in full_text:
+            skill_md = _build_mock_skill_md(full_text)
+            return CompletionResponse(
+                content=[ContentBlock(type="text", text=skill_md)],
+                model=request.model,
+                usage=TokenUsage(input_tokens=250, output_tokens=350, thinking_tokens=60),
+                stop_reason="end_turn",
+            )
+
+        if ITERATIVE_EXTRACTION_MARKER in full_text:
             skill_md = _build_mock_skill_md(full_text)
             return CompletionResponse(
                 content=[ContentBlock(type="text", text=skill_md)],

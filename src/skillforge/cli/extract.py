@@ -10,7 +10,7 @@ from pathlib import Path
 import click
 
 from skillforge.errors import ExtractionError, SkillForgeError
-from skillforge.extractor import ContrastiveExtractor, ReflectiveExtractor
+from skillforge.extractor import ContrastiveExtractor, IterativeExtractor, ReflectiveExtractor
 from skillforge.providers import get_provider
 from skillforge.recorder import load_run
 from skillforge.skill_io import write as write_skill
@@ -18,12 +18,17 @@ from skillforge.skill_io import write as write_skill
 
 @click.command("extract")
 @click.option("--run", "run_path", type=click.Path(exists=True), default=None)
-@click.option("--strategy", type=click.Choice(["reflective", "contrastive"]), default="reflective")
+@click.option(
+    "--strategy",
+    type=click.Choice(["reflective", "contrastive", "iterative"]),
+    default="reflective",
+)
 @click.option("--strong-run", "strong_run_path", type=click.Path(exists=True), default=None)
 @click.option("--weak-run", "weak_run_path", type=click.Path(exists=True), default=None)
 @click.option("--provider", "provider_name", type=str, default="mock")
 @click.option("--model", "model_name", type=str, default="mock-strong")
 @click.option("--out", "out_path", type=click.Path(), default=None)
+@click.option("--max-rounds", type=int, default=3)
 @click.pass_context
 def extract_cmd(
     ctx: click.Context,
@@ -34,18 +39,20 @@ def extract_cmd(
     provider_name: str,
     model_name: str,
     out_path: str | None,
+    max_rounds: int,
 ) -> None:
     """Extract a skill from recorded run traces.
 
     Args:
         ctx: Click context.
         run_path: Path to the run directory (reflective mode).
-        strategy: Extraction strategy (reflective or contrastive).
+        strategy: Extraction strategy (reflective, contrastive, or iterative).
         strong_run_path: Path to strong run (contrastive mode).
         weak_run_path: Path to weak run (contrastive mode).
         provider_name: Provider for extraction LLM.
         model_name: Model for extraction.
         out_path: Output path for SKILL.md.
+        max_rounds: Maximum refinement rounds (iterative mode).
     """
     console = ctx.obj["console"]
 
@@ -92,6 +99,14 @@ def extract_cmd(
                 model=model_name,
                 weak_manifest=weak_manifest,
                 weak_traces=weak_traces,
+            )
+        elif strategy == "iterative":
+            extractor = IterativeExtractor(max_rounds=max_rounds)
+            skill = await extractor.extract(
+                manifest=manifest,
+                traces=traces,
+                provider=provider,
+                model=model_name,
             )
         else:
             extractor = ReflectiveExtractor()

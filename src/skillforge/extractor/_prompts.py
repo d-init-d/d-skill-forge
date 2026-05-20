@@ -94,3 +94,25 @@ The frontmatter must include:
 
 Output ONLY the complete SKILL.md content starting with ---.
 """
+
+ITERATIVE_EXTRACTION_MARKER = "<<SKILLFORGE_ITERATIVE_EXTRACTION_V1>>"
+
+ITERATIVE_REFINEMENT_PROMPT_V1 = """\
+{marker}
+You are refining an existing SKILL.md. Review the current draft and improve it.
+
+## Current Draft
+{current_skill}
+
+## Source Traces (for reference)
+{traces_text}
+
+## Instructions
+Review the current skill draft. Identify:
+- Missing patterns from the traces
+- Overly vague rules that could be more specific
+- Anti-patterns not yet captured
+
+Output the COMPLETE revised SKILL.md starting with ---.
+If the skill is already optimal, output it unchanged.
+"""
