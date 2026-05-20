@@ -12,6 +12,7 @@ from rich.table import Table
 
 from skillforge.errors import SkillForgeError
 from skillforge.evaluator import ExactMatchEvaluator, compare_runs
+from skillforge.evaluator.delta import compute_bootstrap_delta, write_delta_report
 from skillforge.models.skill import EvalReport
 from skillforge.paths import runs_dir
 from skillforge.providers import get_provider
@@ -28,6 +29,8 @@ from skillforge.tasks import load_corpus
 @click.option("--provider", "provider_name", type=str, default="mock")
 @click.option("--weak-model", "weak_model", type=str, default="mock-weak")
 @click.option("--baseline-run", "baseline_run_path", type=click.Path(exists=True), default=None)
+@click.option("--bootstrap", "n_bootstrap", type=int, default=0)
+@click.option("--confidence", type=float, default=0.95)
 @click.pass_context
 def eval_cmd(
     ctx: click.Context,
@@ -36,6 +39,8 @@ def eval_cmd(
     provider_name: str,
     weak_model: str,
     baseline_run_path: str | None,
+    n_bootstrap: int,
+    confidence: float,
 ) -> None:
     """Evaluate a skill by comparing weak model performance.
 
@@ -46,6 +51,8 @@ def eval_cmd(
         provider_name: Provider name.
         weak_model: Weak model identifier.
         baseline_run_path: Optional pre-existing baseline run.
+        n_bootstrap: Number of bootstrap resamples (0 = disabled).
+        confidence: Confidence level for bootstrap CI.
     """
     console = ctx.obj["console"]
 
@@ -100,6 +107,31 @@ def eval_cmd(
         table.add_row("Delta", f"{delta.delta:+.3f}")
         table.add_row("Tasks evaluated", str(delta.tasks_evaluated))
         console.print(table)
+
+        # Bootstrap CI if requested
+        if n_bootstrap > 0:
+            report = compute_bootstrap_delta(
+                baseline_manifest,
+                skill_manifest,
+                n_resamples=n_bootstrap,
+                confidence=confidence,
+            )
+            bs = report.bootstrap
+            console.print(
+                f"\n[bold]Bootstrap ({bs.n_resamples} resamples, "
+                f"{bs.confidence * 100:.0f}% CI):[/bold]"
+            )
+            console.print(
+                f"  delta = {bs.mean_delta:+.4f}  95% CI [{bs.ci_lower:+.4f}, {bs.ci_upper:+.4f}]"
+            )
+            console.print(f"  Wins: {bs.wins} | Losses: {bs.losses} | Ties: {bs.ties}")
+            verdict = "SIGNIFICANT" if bs.significant else "NOT significant"
+            console.print(f"  Verdict: {verdict}")
+
+            # Write delta_report.json
+            report_path = Path.cwd() / "delta_report.json"
+            write_delta_report(report, report_path)
+            console.print(f"[green]✓[/green] Delta report written to [bold]{report_path}[/bold]")
 
         # Append EvalReport to skill frontmatter
         report = EvalReport(
