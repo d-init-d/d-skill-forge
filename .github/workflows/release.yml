@@ -1,3 +1,6 @@
+# NOTE: You must enable Trusted Publishing on PyPI for the publish job to work.
+# See: https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/
+
 name: Release
 
 on:
@@ -20,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Build wheel
+      - name: Build
         run: uv build
 
       - name: Upload artifacts
@@ -28,3 +31,46 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          # Extract section between this tag heading and the next heading
+          sed -n "/^## .*${TAG}/,/^## /{/^## .*${TAG}/p; /^## /!p}" CHANGELOG.md > release_notes.md || true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          files: dist/*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment: pypi
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
