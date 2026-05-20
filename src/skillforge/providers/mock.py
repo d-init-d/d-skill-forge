@@ -6,7 +6,10 @@ import hashlib
 import re
 from typing import ClassVar
 
-from skillforge.extractor._prompts import REFLECTIVE_EXTRACTION_MARKER
+from skillforge.extractor._prompts import (
+    CONTRASTIVE_EXTRACTION_MARKER,
+    REFLECTIVE_EXTRACTION_MARKER,
+)
 from skillforge.models.trace import ContentBlock, TokenUsage
 from skillforge.providers import register
 from skillforge.providers.base import CompletionRequest, CompletionResponse, Provider
@@ -127,6 +130,15 @@ class MockProvider(Provider):
                 content=[ContentBlock(type="text", text=skill_md)],
                 model=request.model,
                 usage=TokenUsage(input_tokens=200, output_tokens=300, thinking_tokens=50),
+                stop_reason="end_turn",
+            )
+
+        if CONTRASTIVE_EXTRACTION_MARKER in full_text:
+            skill_md = _build_mock_skill_md(full_text)
+            return CompletionResponse(
+                content=[ContentBlock(type="text", text=skill_md)],
+                model=request.model,
+                usage=TokenUsage(input_tokens=250, output_tokens=350, thinking_tokens=60),
                 stop_reason="end_turn",
             )
 

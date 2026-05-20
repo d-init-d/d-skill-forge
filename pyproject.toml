@@ -1,6 +1,6 @@
 [project]
 name = "d-skill-forge"
-version = "0.1.2"
+version = "0.2.0rc1"
 description = "Distill procedural skills from frontier model traces into reusable SKILL.md artifacts."
 authors = [{ name = "d-init-d" }]
 license = "Apache-2.0"
@@ -48,7 +48,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "TCH", "PL", "D"]
-ignore = ["D203", "D213", "PLR0913"]
+ignore = ["D203", "D213", "PLR0913", "PLR0915"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
