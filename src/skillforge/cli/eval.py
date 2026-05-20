@@ -13,6 +13,7 @@ from rich.table import Table
 from skillforge.errors import SkillForgeError
 from skillforge.evaluator import ExactMatchEvaluator, compare_runs
 from skillforge.evaluator.delta import compute_bootstrap_delta, write_delta_report
+from skillforge.evaluator.report_html import render_html_report
 from skillforge.models.skill import EvalReport
 from skillforge.paths import runs_dir
 from skillforge.providers import get_provider
@@ -31,6 +32,7 @@ from skillforge.tasks import load_corpus
 @click.option("--baseline-run", "baseline_run_path", type=click.Path(exists=True), default=None)
 @click.option("--bootstrap", "n_bootstrap", type=int, default=0)
 @click.option("--confidence", type=float, default=0.95)
+@click.option("--format", "output_format", type=click.Choice(["text", "html"]), default="text")
 @click.pass_context
 def eval_cmd(
     ctx: click.Context,
@@ -41,6 +43,7 @@ def eval_cmd(
     baseline_run_path: str | None,
     n_bootstrap: int,
     confidence: float,
+    output_format: str,
 ) -> None:
     """Evaluate a skill by comparing weak model performance.
 
@@ -53,6 +56,7 @@ def eval_cmd(
         baseline_run_path: Optional pre-existing baseline run.
         n_bootstrap: Number of bootstrap resamples (0 = disabled).
         confidence: Confidence level for bootstrap CI.
+        output_format: Output format (text or html).
     """
     console = ctx.obj["console"]
 
@@ -132,6 +136,13 @@ def eval_cmd(
             report_path = Path.cwd() / "delta_report.json"
             write_delta_report(report, report_path)
             console.print(f"[green]✓[/green] Delta report written to [bold]{report_path}[/bold]")
+
+            # Write HTML report if requested
+            if output_format == "html":
+                html = render_html_report(report)
+                html_path = Path.cwd() / "eval_report.html"
+                html_path.write_text(html, encoding="utf-8")
+                console.print(f"[green]✓[/green] HTML report written to [bold]{html_path}[/bold]")
 
         # Append EvalReport to skill frontmatter
         report = EvalReport(

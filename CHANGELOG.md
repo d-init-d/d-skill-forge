@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-05-21
+
+### Added
+
+- HTML eval report (`--format html`) with inline CSS, SVG sparkline, color-coded table
+- Kiro subagent `.kiro/agents/skill-learner.md` for skill extraction workflow
+- `docs/extractors.md` — reflective vs contrastive comparison
+- `docs/providers.md` — all 5 providers documented
+
+### Changed
+
+- README updated with v0.2 features (doctor, contrastive, provider matrix, bootstrap CI)
+- mkdocs nav expanded with Extractors and Providers pages
+
 ## [0.2.1] - 2026-05-21
 
 ### Added

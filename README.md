@@ -39,7 +39,64 @@ skillforge eval --skill skills/demo/SKILL.md --corpus tasks.yaml --provider mock
 
 # Validate the skill format
 skillforge lint skills/demo/SKILL.md
+
+# Check provider configuration
+skillforge doctor
 ```
+
+## Contrastive Extraction
+
+Compare strong vs weak model traces to extract targeted skills:
+
+```bash
+# Run both models on the same corpus
+skillforge run --provider anthropic --model claude-opus-4 --corpus tasks.yaml
+skillforge run --provider anthropic --model claude-haiku-3 --corpus tasks.yaml
+
+# Extract what the strong model does differently
+skillforge extract --strategy contrastive \
+  --strong-run runs/<strong-id> \
+  --weak-run runs/<weak-id> \
+  --provider anthropic --model claude-opus-4 \
+  --out skills/SKILL.md
+```
+
+## Eval with Bootstrap CI
+
+Measure skill impact with statistical confidence:
+
+```bash
+skillforge eval --skill skills/SKILL.md --corpus tasks.yaml \
+  --provider mock --weak-model mock-weak --bootstrap 1000
+```
+
+Example output:
+
+```
+┌─────────────────┬────────┐
+│ Metric          │ Value  │
+├─────────────────┼────────┤
+│ Baseline score  │ 0.400  │
+│ With skill      │ 0.800  │
+│ Delta           │ +0.400 │
+│ Tasks evaluated │ 5      │
+└─────────────────┴────────┘
+
+Bootstrap (1000 resamples, 95% CI):
+  delta = +0.4000  95% CI [+0.2000, +0.6000]
+  Wins: 4 | Losses: 0 | Ties: 1
+  Verdict: SIGNIFICANT
+```
+
+## Provider Matrix
+
+| Provider | Install | Env Var |
+|----------|---------|---------|
+| anthropic | included | `ANTHROPIC_API_KEY` |
+| openai | included | `OPENAI_API_KEY` |
+| bedrock | `pip install d-skill-forge[bedrock]` | AWS credentials |
+| gemini | `pip install d-skill-forge[gemini]` | `GOOGLE_API_KEY` |
+| mock | included | (none) |
 
 ## With a real provider
 
@@ -53,6 +110,8 @@ skillforge run --provider anthropic --model claude-opus-4 --corpus tasks.yaml
 - [Quickstart](docs/quickstart.md)
 - [Concepts](docs/concepts.md)
 - [Architecture](docs/architecture.md)
+- [Extractors](docs/extractors.md)
+- [Providers](docs/providers.md)
 - [CLI Reference](docs/reference/cli.md)
 
 ## Example

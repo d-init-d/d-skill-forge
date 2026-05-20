@@ -8,6 +8,8 @@ nav:
   - Quickstart: quickstart.md
   - Concepts: concepts.md
   - Architecture: architecture.md
+  - Extractors: extractors.md
+  - Providers: providers.md
   - Reference:
       - CLI: reference/cli.md
       - API: reference/api.md
