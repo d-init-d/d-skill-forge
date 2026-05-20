@@ -36,6 +36,22 @@ class BootstrapResult(BaseModel):
     significant: bool
 
 
+class PerTaskRow(BaseModel):
+    """Per-task score comparison row.
+
+    Attributes:
+        task_id: Task identifier.
+        baseline: Baseline score.
+        with_skill: Score with skill loaded.
+        delta: Score difference.
+    """
+
+    task_id: str
+    baseline: float
+    with_skill: float
+    delta: float
+
+
 class DeltaReport(BaseModel):
     """Full delta report with per-task breakdown and bootstrap stats.
 
@@ -53,7 +69,7 @@ class DeltaReport(BaseModel):
     delta: float
     tasks_evaluated: int
     bootstrap: BootstrapResult
-    per_task: list[dict[str, object]] = Field(default_factory=list)
+    per_task: list[PerTaskRow] = Field(default_factory=list[PerTaskRow])
 
 
 def compute_bootstrap_delta(
@@ -130,12 +146,12 @@ def compute_bootstrap_delta(
     significant = ci_lower > 0 or ci_upper < 0
 
     per_task = [
-        {
-            "task_id": t,
-            "baseline": baseline_scores[t],
-            "with_skill": skill_scores[t],
-            "delta": skill_scores[t] - baseline_scores[t],
-        }
+        PerTaskRow(
+            task_id=t,
+            baseline=baseline_scores[t],
+            with_skill=skill_scores[t],
+            delta=skill_scores[t] - baseline_scores[t],
+        )
         for t in common_tasks
     ]
 

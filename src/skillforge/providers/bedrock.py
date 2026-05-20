@@ -3,12 +3,23 @@
 from __future__ import annotations
 
 import json
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar, Protocol
 
 from skillforge.errors import AuthError, ProviderError
 from skillforge.models.trace import ContentBlock, TokenUsage
 from skillforge.providers import register
 from skillforge.providers.base import CompletionRequest, CompletionResponse, Provider
+
+if TYPE_CHECKING:
+    from typing import Any
+
+
+class _BedrockClient(Protocol):
+    """Protocol for the subset of boto3 bedrock-runtime client we use."""
+
+    def invoke_model(
+        self, *, modelId: str, body: str, contentType: str, accept: str
+    ) -> dict[str, Any]: ...
 
 
 @register("bedrock")
@@ -23,9 +34,9 @@ class BedrockProvider(Provider):
 
     def __init__(self) -> None:
         """Initialize the Bedrock provider with lazy boto3 import."""
-        self._client = None
+        self._client: _BedrockClient | None = None
 
-    def _get_client(self):
+    def _get_client(self) -> _BedrockClient:
         """Lazily initialize the boto3 bedrock-runtime client.
 
         Returns:

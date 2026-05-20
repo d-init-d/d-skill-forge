@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-05-21
+
+### Added
+
+- Unit tests for contrastive extractor, delta bootstrap, bedrock/gemini providers
+- Unit tests for logging module, __main__ entrypoint, CLI error handling
+- `PerTaskRow` model replacing untyped dict in DeltaReport
+
+### Changed
+
+- Coverage threshold raised to 90% (actual: 92%+)
+- CI workflow now enforces `--cov-fail-under=90`
+- Removed `delta.py` from pyright strict exclusion (fully typed now)
+- Removed `bedrock.py` and `gemini.py` from coverage omit
+
 ## [0.2.0] - 2026-05-20
 
 ### Added

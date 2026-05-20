@@ -18,5 +18,5 @@ jobs:
       - run: uv run ruff check src tests
       - run: uv run ruff format --check src tests
       - run: uv run pyright
-      - run: uv run pytest --cov=skillforge --cov-report=term-missing --cov-fail-under=80
+      - run: uv run pytest --cov=skillforge --cov-report=term-missing --cov-fail-under=90
       - run: uv run mkdocs build --strict

@@ -1,6 +1,6 @@
 [project]
 name = "d-skill-forge"
-version = "0.2.0"
+version = "0.2.1"
 description = "Distill procedural skills from frontier model traces into reusable SKILL.md artifacts."
 authors = [{ name = "d-init-d" }]
 license = "Apache-2.0"
@@ -58,7 +58,7 @@ convention = "google"
 [tool.pyright]
 include = ["src"]
 strict = ["src"]
-exclude = ["src/skillforge/providers/bedrock.py", "src/skillforge/evaluator/delta.py"]
+exclude = ["src/skillforge/providers/bedrock.py"]
 pythonVersion = "3.11"
 
 [tool.pytest.ini_options]
@@ -70,7 +70,4 @@ markers = [
 ]
 
 [tool.coverage.run]
-omit = [
-  "src/skillforge/providers/bedrock.py",
-  "src/skillforge/providers/gemini.py",
-]
+omit = []
