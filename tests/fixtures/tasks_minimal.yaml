@@ -1,0 +1,44 @@
+version: 1
+name: "minimal-test-corpus"
+description: "A minimal corpus for testing with mixed outcome kinds."
+domain: "python-debug"
+tasks:
+  - id: "task-exact"
+    prompt: "What is 2 + 2?"
+    expected:
+      kind: "exact"
+      value: "4"
+    tags: ["math"]
+
+  - id: "task-contains"
+    prompt: "Explain {{ topic }} briefly."
+    inputs:
+      topic: "recursion"
+    expected:
+      kind: "contains"
+      value: "function"
+    tags: ["explanation"]
+
+  - id: "task-regex"
+    prompt: "Generate a valid email address."
+    expected:
+      kind: "regex"
+      value: "^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$"
+    tags: ["generation"]
+
+  - id: "task-executes-ok"
+    prompt: "Write a Python function that returns True."
+    context: "The function should be named check()."
+    expected:
+      kind: "executes_ok"
+    weight: 2.0
+    tags: ["code", "python"]
+
+  - id: "task-llm-judge"
+    prompt: "Write a haiku about {{ subject }}."
+    inputs:
+      subject: "programming"
+    expected:
+      kind: "llm_judge"
+      judge_rubric: "The output must be a valid haiku with 5-7-5 syllable structure about the given subject."
+    tags: ["creative"]

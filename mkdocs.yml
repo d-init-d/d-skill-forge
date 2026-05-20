@@ -1,0 +1,17 @@
+site_name: d-skill-forge
+site_description: Distill procedural skills from frontier model traces into reusable SKILL.md artifacts.
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Concepts: concepts.md
+  - Architecture: architecture.md
+  - Reference:
+      - CLI: reference/cli.md
+      - API: reference/api.md
+  - Examples:
+      - Python Debug: examples/python-debug.md
+
+docs_dir: docs

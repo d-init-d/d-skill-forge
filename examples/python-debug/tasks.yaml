@@ -1,0 +1,94 @@
+version: 1
+name: "python-debug"
+description: "Debug common Python runtime errors — TypeError, AttributeError, KeyError, IndexError, ImportError, ValueError, async misuse, off-by-one, mutable defaults."
+domain: "python-debug"
+tasks:
+  - id: "fix-type-error-concat"
+    prompt: "Fix this Python code so it runs without error:\n\nresult = 'count: ' + 42\nprint(result)"
+    expected:
+      kind: "executes_ok"
+    tags: ["TypeError"]
+
+  - id: "fix-type-error-none-add"
+    prompt: "Fix this Python code so it runs without error:\n\ndef get_value():\n    pass\n\nx = get_value() + 1\nprint(x)"
+    expected:
+      kind: "executes_ok"
+    tags: ["TypeError"]
+
+  - id: "fix-attribute-error-none"
+    prompt: "Fix this Python code so it runs without error:\n\ndata = None\nprint(data.strip())"
+    expected:
+      kind: "executes_ok"
+    tags: ["AttributeError"]
+
+  - id: "fix-attribute-error-typo"
+    prompt: "Fix this Python code so it runs without error:\n\nnames = ['alice', 'bob']\nnames.apend('charlie')\nprint(names)"
+    expected:
+      kind: "executes_ok"
+    tags: ["AttributeError"]
+
+  - id: "fix-key-error-missing"
+    prompt: "Fix this Python code so it runs without error and prints 'unknown':\n\nuser = {'name': 'Alice'}\nprint(user['role'])"
+    expected:
+      kind: "executes_ok"
+    tags: ["KeyError"]
+
+  - id: "fix-key-error-case"
+    prompt: "Fix this Python code so it runs without error:\n\nconfig = {'Debug': True}\nprint(config['debug'])"
+    expected:
+      kind: "executes_ok"
+    tags: ["KeyError"]
+
+  - id: "fix-index-error-empty"
+    prompt: "Fix this Python code so it runs without error:\n\nitems = []\nprint(items[0])"
+    expected:
+      kind: "executes_ok"
+    tags: ["IndexError"]
+
+  - id: "fix-index-error-off-by-one"
+    prompt: "Fix this Python code so it prints the last element without IndexError:\n\nnums = [10, 20, 30]\nprint(nums[3])"
+    expected:
+      kind: "executes_ok"
+    tags: ["IndexError", "off-by-one"]
+
+  - id: "fix-import-error-typo"
+    prompt: "Fix this Python code so it runs without error:\n\nfrom collections import ordereddict\nprint(ordereddict())"
+    expected:
+      kind: "executes_ok"
+    tags: ["ImportError"]
+
+  - id: "fix-value-error-int"
+    prompt: "Fix this Python code so it runs without error and prints 0 for invalid input:\n\nuser_input = 'abc'\nresult = int(user_input)\nprint(result)"
+    expected:
+      kind: "executes_ok"
+    tags: ["ValueError"]
+
+  - id: "fix-value-error-unpack"
+    prompt: "Fix this Python code so it runs without error:\n\npair = (1,)\na, b = pair\nprint(a, b)"
+    expected:
+      kind: "executes_ok"
+    tags: ["ValueError"]
+
+  - id: "fix-mutable-default"
+    prompt: "Fix this Python code so each call to add_item gets a fresh list:\n\ndef add_item(item, lst=[]):\n    lst.append(item)\n    return lst\n\nprint(add_item('a'))\nprint(add_item('b'))"
+    expected:
+      kind: "executes_ok"
+    tags: ["mutable-default"]
+
+  - id: "fix-async-misuse-no-await"
+    prompt: "Fix this Python code so it correctly awaits the coroutine:\n\nimport asyncio\n\nasync def fetch():\n    return 42\n\nasync def main():\n    result = fetch()\n    print(result)\n\nasyncio.run(main())"
+    expected:
+      kind: "executes_ok"
+    tags: ["async"]
+
+  - id: "fix-off-by-one-range"
+    prompt: "Fix this Python code so it prints numbers 1 through 5 inclusive:\n\nfor i in range(1, 5):\n    print(i)"
+    expected:
+      kind: "executes_ok"
+    tags: ["off-by-one"]
+
+  - id: "fix-recursion-no-base"
+    prompt: "Fix this Python code so factorial(5) returns 120 without hitting recursion limit:\n\ndef factorial(n):\n    return n * factorial(n - 1)\n\nprint(factorial(5))"
+    expected:
+      kind: "executes_ok"
+    tags: ["RecursionError"]
