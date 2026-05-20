@@ -7,11 +7,13 @@ import sys
 import click
 from rich.console import Console
 
+import skillforge.providers.bedrock as _bedrock_provider
+import skillforge.providers.gemini as _gemini_provider
 import skillforge.providers.mock as _mock_provider
 from skillforge.errors import SkillForgeError
 
 # Ensure provider registration side-effect is not pruned.
-_PROVIDERS_LOADED = bool(_mock_provider)
+_PROVIDERS_LOADED = bool(_mock_provider) and bool(_bedrock_provider) and bool(_gemini_provider)
 
 console = Console()
 

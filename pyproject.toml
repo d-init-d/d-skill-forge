@@ -1,6 +1,6 @@
 [project]
 name = "d-skill-forge"
-version = "0.2.0rc1"
+version = "0.2.0rc2"
 description = "Distill procedural skills from frontier model traces into reusable SKILL.md artifacts."
 authors = [{ name = "d-init-d" }]
 license = "Apache-2.0"
@@ -31,6 +31,8 @@ dev = [
   "mkdocs-material>=9.5",
   "mkdocs-click>=0.8",
 ]
+bedrock = ["boto3>=1.34"]
+gemini = ["google-generativeai>=0.7"]
 
 [project.scripts]
 skillforge = "skillforge.cli.main:cli"
@@ -56,6 +58,7 @@ convention = "google"
 [tool.pyright]
 include = ["src"]
 strict = ["src"]
+exclude = ["src/skillforge/providers/bedrock.py"]
 pythonVersion = "3.11"
 
 [tool.pytest.ini_options]
@@ -64,4 +67,10 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
   "smoke: hits real provider APIs; skipped unless RUN_SMOKE=1.",
+]
+
+[tool.coverage.run]
+omit = [
+  "src/skillforge/providers/bedrock.py",
+  "src/skillforge/providers/gemini.py",
 ]
