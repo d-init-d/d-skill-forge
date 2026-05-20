@@ -14,13 +14,15 @@ from skillforge.skill_io import read as read_skill
 
 @click.command("lint")
 @click.argument("path", type=click.Path())
+@click.option("--strict", is_flag=True, default=False, help="Treat warnings as errors.")
 @click.pass_context
-def lint_cmd(ctx: click.Context, path: str) -> None:
+def lint_cmd(ctx: click.Context, path: str, *, strict: bool) -> None:
     """Lint a SKILL.md file for structural and content issues.
 
     Args:
         ctx: Click context.
         path: Path to the SKILL.md file.
+        strict: When True, warnings become errors.
     """
     console = ctx.obj["console"]
     skill_path = Path(path)
@@ -44,14 +46,16 @@ def lint_cmd(ctx: click.Context, path: str) -> None:
         return
 
     has_errors = False
+    has_warnings = False
     for issue in issues:
         loc = f" ({issue.location})" if issue.location else ""
         if issue.severity == "error":
             has_errors = True
             console.print(f"[red]ERROR[/red]{loc}: {issue.message}")
         else:
+            has_warnings = True
             console.print(f"[yellow]WARN[/yellow]{loc}: {issue.message}")
 
-    if has_errors:
+    if has_errors or (strict and has_warnings):
         ctx.exit(1)
         sys.exit(1)

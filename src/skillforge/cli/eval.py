@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -32,7 +33,9 @@ from skillforge.tasks import load_corpus
 @click.option("--baseline-run", "baseline_run_path", type=click.Path(exists=True), default=None)
 @click.option("--bootstrap", "n_bootstrap", type=int, default=0)
 @click.option("--confidence", type=float, default=0.95)
-@click.option("--format", "output_format", type=click.Choice(["text", "html"]), default="text")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "html", "json"]), default="text"
+)
 @click.pass_context
 def eval_cmd(
     ctx: click.Context,
@@ -102,47 +105,74 @@ def eval_cmd(
 
         delta = compare_runs(baseline_manifest, skill_manifest)
 
-        # Print results table
-        table = Table(title="Eval Results")
-        table.add_column("Metric", style="bold")
-        table.add_column("Value")
-        table.add_row("Baseline score", f"{delta.baseline_score:.3f}")
-        table.add_row("With skill score", f"{delta.with_skill_score:.3f}")
-        table.add_row("Delta", f"{delta.delta:+.3f}")
-        table.add_row("Tasks evaluated", str(delta.tasks_evaluated))
-        console.print(table)
-
-        # Bootstrap CI if requested
-        if n_bootstrap > 0:
+        # JSON output (no Rich table)
+        if output_format == "json" and n_bootstrap > 0:
             report = compute_bootstrap_delta(
                 baseline_manifest,
                 skill_manifest,
                 n_resamples=n_bootstrap,
                 confidence=confidence,
             )
-            bs = report.bootstrap
-            console.print(
-                f"\n[bold]Bootstrap ({bs.n_resamples} resamples, "
-                f"{bs.confidence * 100:.0f}% CI):[/bold]"
+            click.echo(report.model_dump_json(indent=2))
+        elif output_format == "json":
+            click.echo(
+                json.dumps(
+                    {
+                        "baseline_score": delta.baseline_score,
+                        "with_skill_score": delta.with_skill_score,
+                        "delta": delta.delta,
+                        "tasks_evaluated": delta.tasks_evaluated,
+                    },
+                    indent=2,
+                )
             )
-            console.print(
-                f"  delta = {bs.mean_delta:+.4f}  95% CI [{bs.ci_lower:+.4f}, {bs.ci_upper:+.4f}]"
-            )
-            console.print(f"  Wins: {bs.wins} | Losses: {bs.losses} | Ties: {bs.ties}")
-            verdict = "SIGNIFICANT" if bs.significant else "NOT significant"
-            console.print(f"  Verdict: {verdict}")
+        else:
+            # Print results table
+            table = Table(title="Eval Results")
+            table.add_column("Metric", style="bold")
+            table.add_column("Value")
+            table.add_row("Baseline score", f"{delta.baseline_score:.3f}")
+            table.add_row("With skill score", f"{delta.with_skill_score:.3f}")
+            table.add_row("Delta", f"{delta.delta:+.3f}")
+            table.add_row("Tasks evaluated", str(delta.tasks_evaluated))
+            console.print(table)
 
-            # Write delta_report.json
-            report_path = Path.cwd() / "delta_report.json"
-            write_delta_report(report, report_path)
-            console.print(f"[green]✓[/green] Delta report written to [bold]{report_path}[/bold]")
+            # Bootstrap CI if requested
+            if n_bootstrap > 0:
+                report = compute_bootstrap_delta(
+                    baseline_manifest,
+                    skill_manifest,
+                    n_resamples=n_bootstrap,
+                    confidence=confidence,
+                )
+                bs = report.bootstrap
+                console.print(
+                    f"\n[bold]Bootstrap ({bs.n_resamples} resamples, "
+                    f"{bs.confidence * 100:.0f}% CI):[/bold]"
+                )
+                console.print(
+                    f"  delta = {bs.mean_delta:+.4f}  "
+                    f"95% CI [{bs.ci_lower:+.4f}, {bs.ci_upper:+.4f}]"
+                )
+                console.print(f"  Wins: {bs.wins} | Losses: {bs.losses} | Ties: {bs.ties}")
+                verdict = "SIGNIFICANT" if bs.significant else "NOT significant"
+                console.print(f"  Verdict: {verdict}")
 
-            # Write HTML report if requested
-            if output_format == "html":
-                html = render_html_report(report)
-                html_path = Path.cwd() / "eval_report.html"
-                html_path.write_text(html, encoding="utf-8")
-                console.print(f"[green]✓[/green] HTML report written to [bold]{html_path}[/bold]")
+                # Write delta_report.json
+                report_path = Path.cwd() / "delta_report.json"
+                write_delta_report(report, report_path)
+                console.print(
+                    f"[green]✓[/green] Delta report written to [bold]{report_path}[/bold]"
+                )
+
+                # Write HTML report if requested
+                if output_format == "html":
+                    html = render_html_report(report)
+                    html_path = Path.cwd() / "eval_report.html"
+                    html_path.write_text(html, encoding="utf-8")
+                    console.print(
+                        f"[green]✓[/green] HTML report written to [bold]{html_path}[/bold]"
+                    )
 
         # Append EvalReport to skill frontmatter
         report = EvalReport(
