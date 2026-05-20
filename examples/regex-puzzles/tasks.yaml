@@ -1,0 +1,64 @@
+version: 1
+name: "regex-puzzles"
+description: "Construct regular expressions for common text matching challenges — IPv4, email, phone, passwords, and advanced patterns."
+domain: "regex-puzzles"
+tasks:
+  - id: "match-ipv4-address"
+    prompt: "Write a regex that matches valid IPv4 addresses (e.g., 192.168.1.1). Each octet is 0-255."
+    expected:
+      kind: "contains"
+      value: "\\d"
+
+  - id: "validate-email-format"
+    prompt: "Write a regex that validates basic email addresses in the form user@domain.tld."
+    expected:
+      kind: "contains"
+      value: "@"
+
+  - id: "extract-phone-number"
+    prompt: "Write a regex that extracts US phone numbers in formats like (555) 123-4567 or 555-123-4567."
+    expected:
+      kind: "contains"
+      value: "\\d"
+
+  - id: "password-lookahead"
+    prompt: "Write a regex using lookaheads to validate a password has at least 8 chars, one uppercase, one digit, and one special character."
+    expected:
+      kind: "contains"
+      value: "?="
+
+  - id: "non-greedy-match"
+    prompt: "Write a regex that matches the content of the first HTML tag only (non-greedy) in a string like '<b>hello</b> <b>world</b>'."
+    expected:
+      kind: "contains"
+      value: "?"
+
+  - id: "named-groups-date"
+    prompt: "Write a regex with named groups to parse dates in YYYY-MM-DD format, capturing year, month, and day as named groups."
+    expected:
+      kind: "contains"
+      value: "?P<"
+
+  - id: "backreference-repeated-word"
+    prompt: "Write a regex that detects repeated consecutive words like 'the the' in a sentence."
+    expected:
+      kind: "contains"
+      value: "\\1"
+
+  - id: "negated-character-class"
+    prompt: "Write a regex that matches strings containing only non-digit characters."
+    expected:
+      kind: "contains"
+      value: "[^"
+
+  - id: "anchors-full-line"
+    prompt: "Write a regex that matches lines consisting entirely of uppercase letters (nothing else on the line)."
+    expected:
+      kind: "contains"
+      value: "^"
+
+  - id: "unicode-letter-match"
+    prompt: "Write a regex that matches any Unicode letter character (not just ASCII a-z)."
+    expected:
+      kind: "contains"
+      value: "\\p{"

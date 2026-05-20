@@ -15,5 +15,7 @@ nav:
       - API: reference/api.md
   - Examples:
       - Python Debug: examples/python-debug.md
+      - SQL Debug: examples/sql-debug.md
+      - Regex Puzzles: examples/regex-puzzles.md
 
 docs_dir: docs

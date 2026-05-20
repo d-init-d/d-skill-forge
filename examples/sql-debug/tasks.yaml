@@ -1,0 +1,64 @@
+version: 1
+name: "sql-debug"
+description: "Debug common SQL query errors — missing JOINs, NULL comparisons, GROUP BY misuse, ambiguous columns, and more."
+domain: "sql-debug"
+tasks:
+  - id: "fix-missing-join"
+    prompt: "Fix this SQL query that references columns from two tables but has no JOIN:\n\nSELECT users.name, orders.total\nFROM users, orders\nWHERE users.id = 1;"
+    expected:
+      kind: "contains"
+      value: "JOIN"
+
+  - id: "fix-null-comparison"
+    prompt: "Fix this SQL query that incorrectly uses = to compare with NULL:\n\nSELECT * FROM employees WHERE manager_id = NULL;"
+    expected:
+      kind: "contains"
+      value: "IS NULL"
+
+  - id: "fix-group-by-no-aggregate"
+    prompt: "Fix this SQL query that selects a non-aggregated column without it being in GROUP BY:\n\nSELECT department, name, COUNT(*)\nFROM employees\nGROUP BY department;"
+    expected:
+      kind: "contains"
+      value: "GROUP BY"
+
+  - id: "fix-ambiguous-column"
+    prompt: "Fix this SQL query with an ambiguous column reference:\n\nSELECT id, name, order_date\nFROM users\nJOIN orders ON users.id = orders.user_id\nWHERE id = 5;"
+    expected:
+      kind: "contains"
+      value: "users.id"
+
+  - id: "fix-integer-division"
+    prompt: "Fix this SQL query where integer division truncates the result:\n\nSELECT completed_tasks / total_tasks AS completion_rate\nFROM projects;"
+    expected:
+      kind: "contains"
+      value: "CAST"
+
+  - id: "fix-order-by-limit"
+    prompt: "Fix this SQL query where ORDER BY is applied after LIMIT, giving wrong results:\n\nSELECT name, score\nFROM students\nLIMIT 10\nORDER BY score DESC;"
+    expected:
+      kind: "contains"
+      value: "ORDER BY"
+
+  - id: "fix-missing-where"
+    prompt: "Fix this SQL UPDATE that is missing a WHERE clause and would update all rows:\n\nUPDATE accounts SET balance = 0;"
+    expected:
+      kind: "contains"
+      value: "WHERE"
+
+  - id: "fix-insert-no-columns"
+    prompt: "Fix this SQL INSERT that relies on column order instead of explicit column list:\n\nINSERT INTO users VALUES (1, 'Alice', 'alice@example.com', NOW());"
+    expected:
+      kind: "contains"
+      value: "INSERT INTO users ("
+
+  - id: "fix-count-star-vs-col"
+    prompt: "Fix this SQL query that uses COUNT(email) but should count all rows including those with NULL email:\n\nSELECT department, COUNT(email) AS headcount\nFROM employees\nGROUP BY department;"
+    expected:
+      kind: "contains"
+      value: "COUNT(*)"
+
+  - id: "fix-subquery-correlation"
+    prompt: "Fix this correlated subquery that references the wrong table alias:\n\nSELECT name FROM employees e\nWHERE salary > (SELECT AVG(salary) FROM employees);"
+    expected:
+      kind: "contains"
+      value: "e.department"
