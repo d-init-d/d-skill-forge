@@ -32,6 +32,7 @@ def cli(ctx: click.Context, config_path: str | None, verbose: bool, quiet: bool)
 
 
 # Register subcommands — imports at module level to satisfy PLC0415.
+from skillforge.cli.doctor import doctor_cmd  # noqa: E402
 from skillforge.cli.eval import eval_cmd  # noqa: E402
 from skillforge.cli.extract import extract_cmd  # noqa: E402
 from skillforge.cli.init import init_cmd  # noqa: E402
@@ -43,6 +44,7 @@ cli.add_command(run_cmd)
 cli.add_command(extract_cmd)
 cli.add_command(eval_cmd)
 cli.add_command(lint_cmd)
+cli.add_command(doctor_cmd)
 
 
 def main() -> None:
