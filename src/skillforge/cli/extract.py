@@ -10,7 +10,7 @@ from pathlib import Path
 import click
 
 from skillforge.errors import ExtractionError, SkillForgeError
-from skillforge.extractor import ContrastiveExtractor, IterativeExtractor, ReflectiveExtractor
+from skillforge.extractor import ContrastiveExtractor, DeepExtractor, IterativeExtractor, ReflectiveExtractor
 from skillforge.providers import get_provider
 from skillforge.recorder import load_run
 from skillforge.skill_io import write as write_skill
@@ -20,8 +20,8 @@ from skillforge.skill_io import write as write_skill
 @click.option("--run", "run_path", type=click.Path(exists=True), default=None)
 @click.option(
     "--strategy",
-    type=click.Choice(["reflective", "contrastive", "iterative"]),
-    default="reflective",
+    type=click.Choice(["reflective", "contrastive", "iterative", "deep"]),
+    default="deep",
 )
 @click.option("--strong-run", "strong_run_path", type=click.Path(exists=True), default=None)
 @click.option("--weak-run", "weak_run_path", type=click.Path(exists=True), default=None)
@@ -102,6 +102,14 @@ def extract_cmd(
             )
         elif strategy == "iterative":
             extractor = IterativeExtractor(max_rounds=max_rounds)
+            skill = await extractor.extract(
+                manifest=manifest,
+                traces=traces,
+                provider=provider,
+                model=model_name,
+            )
+        elif strategy == "deep":
+            extractor = DeepExtractor()
             skill = await extractor.extract(
                 manifest=manifest,
                 traces=traces,

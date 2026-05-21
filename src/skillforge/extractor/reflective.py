@@ -110,7 +110,7 @@ class ReflectiveExtractor(Extractor):
         return passed[:passed_budget] + failed[:failed_budget]
 
     def _format_traces(self, traces: list[Trace]) -> str:
-        """Format traces into a text block for the prompt.
+        """Format traces with deep content for the prompt.
 
         Args:
             traces: Traces to format.
@@ -118,12 +118,9 @@ class ReflectiveExtractor(Extractor):
         Returns:
             Formatted text representation.
         """
-        parts: list[str] = []
-        for i, trace in enumerate(traces, 1):
-            status = "PASSED" if (trace.score and trace.score.passed) else "FAILED"
-            parts.append(f"### Trace {i} [{status}] (task: {trace.task_id})")
-            parts.append(f"Output: {trace.final_output[:500]}")
-            if trace.error:
-                parts.append(f"Error: {trace.error}")
-            parts.append("")
-        return "\n".join(parts)
+        from .budget import allocate_budgets
+        from .formatter import format_trace_deep
+
+        budgets = allocate_budgets(traces, total_budget=60_000)
+        parts = [format_trace_deep(t, b) for t, b in zip(traces, budgets)]
+        return "\n\n---\n\n".join(parts)
