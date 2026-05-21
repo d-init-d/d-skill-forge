@@ -15,14 +15,14 @@ from skillforge.errors import SkillForgeError
 # Ensure provider registration side-effect is not pruned.
 _PROVIDERS_LOADED = bool(_mock_provider) and bool(_bedrock_provider) and bool(_gemini_provider)
 
-console = Console()
+console = Console(highlight=False, force_terminal=True)
 
 
 @click.group()
 @click.option("--config", "config_path", type=click.Path(exists=False), default=None)
 @click.option("-v", "--verbose", is_flag=True)
 @click.option("-q", "--quiet", is_flag=True)
-@click.version_option(package_name="d-skill-forge")
+@click.version_option(version="1.0.0", prog_name="dskillforge")
 @click.pass_context
 def cli(ctx: click.Context, config_path: str | None, verbose: bool, quiet: bool) -> None:
     """Distill procedural skills from frontier model traces."""
@@ -56,6 +56,16 @@ cli.add_command(doctor_cmd)
 def main() -> None:
     """Entry point: TUI by default (no args), CLI otherwise."""
     import sys as _sys
+
+    # Force UTF-8 on Windows
+    if _sys.platform == "win32":
+        import os as _os
+
+        _os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+        if hasattr(_sys.stdout, "reconfigure"):
+            _sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(_sys.stderr, "reconfigure"):
+            _sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
     # If no arguments → launch TUI
     if len(_sys.argv) == 1:

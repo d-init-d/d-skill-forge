@@ -30,11 +30,11 @@ def auth_list() -> None:
 
     for pid in get_all_provider_ids():
         if pid in configured:
-            table.add_row(pid, "✓ configured", "auth.json")
+            table.add_row(pid, "[green]OK[/green]", "auth.json")
         else:
             preset = PRESETS.get(pid)
             env_var = preset.api_key_env if preset else ""
-            table.add_row(pid, "✗ not set", env_var or "—")
+            table.add_row(pid, "[dim]not set[/dim]", env_var or "-")
 
     console.print(table)
 
