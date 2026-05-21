@@ -29,6 +29,7 @@ from skillforge.skill_io import write as write_skill
 @click.option("--model", "model_name", type=str, default="mock-strong")
 @click.option("--out", "out_path", type=click.Path(), default=None)
 @click.option("--max-rounds", type=int, default=3)
+@click.option("--domain", type=str, default=None, help="Domain label (auto-detected from corpus if omitted)")
 @click.pass_context
 def extract_cmd(
     ctx: click.Context,
@@ -40,6 +41,7 @@ def extract_cmd(
     model_name: str,
     out_path: str | None,
     max_rounds: int,
+    domain: str | None,
 ) -> None:
     """Extract a skill from recorded run traces.
 
@@ -109,12 +111,15 @@ def extract_cmd(
                 model=model_name,
             )
         elif strategy == "deep":
+            # Auto-detect domain from corpus if not specified
+            detected_domain = domain or _detect_domain(run_path or strong_run_path)
             extractor = DeepExtractor()
             skill = await extractor.extract(
                 manifest=manifest,
                 traces=traces,
                 provider=provider,
                 model=model_name,
+                domain=detected_domain,
             )
         else:
             extractor = ReflectiveExtractor()
@@ -150,3 +155,41 @@ def extract_cmd(
     except SkillForgeError as e:
         console.print(f"[red]Error:[/red] {e}")
         sys.exit(1)
+
+
+def _detect_domain(run_path: str | None) -> str:
+    """Auto-detect domain from corpus file in run directory.
+
+    Args:
+        run_path: Path to the run directory.
+
+    Returns:
+        Detected domain string, or "general" as fallback.
+    """
+    if not run_path:
+        return "general"
+
+    import yaml
+
+    run_dir = Path(run_path)
+
+    # Try to find corpus file referenced in manifest
+    manifest_path = run_dir / "manifest.json"
+    if manifest_path.exists():
+        import json
+
+        manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        corpus_path_str = manifest_data.get("corpus_path", "")
+        if corpus_path_str:
+            # Try relative to run dir, then relative to cwd
+            for base in [run_dir, Path.cwd()]:
+                candidate = base / corpus_path_str
+                if candidate.exists():
+                    try:
+                        corpus_data = yaml.safe_load(candidate.read_text(encoding="utf-8"))
+                        if isinstance(corpus_data, dict) and "domain" in corpus_data:
+                            return corpus_data["domain"]
+                    except Exception:
+                        pass
+
+    return "general"

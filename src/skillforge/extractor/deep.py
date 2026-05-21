@@ -34,6 +34,7 @@ class DeepExtractor(Extractor):
         model: str,
         *,
         max_traces: int = 15,
+        domain: str = "general",
     ) -> Skill:
         """Extract a skill using multi-pass deep analysis.
 
@@ -43,6 +44,7 @@ class DeepExtractor(Extractor):
             provider: LLM provider for extraction.
             model: Model identifier.
             max_traces: Maximum traces to analyze per pass.
+            domain: Domain label for the skill (auto-detected from corpus if available).
 
         Returns:
             A distilled Skill artifact.
@@ -104,7 +106,7 @@ class DeepExtractor(Extractor):
             pass2_output=pass2,
             pass3_output=pass3,
             model=manifest.model,
-            domain="general",
+            domain=domain,
             total_traces=len(traces),
             passed_count=passed_count,
             failed_count=failed_count,
