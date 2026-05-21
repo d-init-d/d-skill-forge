@@ -1,122 +1,172 @@
-# d-skill-forge
+<p align="center">
+  <h1 align="center">🔥 d-skill-forge</h1>
+  <p align="center">
+    <strong>Distill procedural skills from frontier model traces into reusable SKILL.md artifacts</strong>
+  </p>
+  <p align="center">
+    <a href="https://github.com/d-init-d/d-skill-forge/actions/workflows/ci.yml"><img src="https://github.com/d-init-d/d-skill-forge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://github.com/d-init-d/d-skill-forge/releases"><img src="https://img.shields.io/github/v/release/d-init-d/d-skill-forge?color=blue" alt="Release"></a>
+    <img src="https://img.shields.io/badge/python-3.11%2B-blue.svg" alt="Python 3.11+">
+    <img src="https://img.shields.io/badge/license-Apache--2.0-green.svg" alt="License">
+  </p>
+</p>
 
-[![CI](https://github.com/d-init-d/d-skill-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/d-init-d/d-skill-forge/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+---
 
-Distill procedural skills from frontier model traces into reusable **SKILL.md** artifacts that make weaker models measurably better.
+## What is d-skill-forge?
 
-## What it does
+d-skill-forge captures how strong models (Claude Opus, GPT-5) solve tasks, reflects on the execution traces, and produces a structured **SKILL.md** file. When loaded into a weaker model's context, the skill improves its performance on the same domain — **no fine-tuning required**.
 
-d-skill-forge captures how strong models (Claude Opus, GPT-5) solve tasks, reflects on the execution traces, and produces a structured markdown skill file. When loaded into a weaker model's context, the skill improves its performance on the same domain — no fine-tuning required.
+```
+Task corpus  →  STRONG MODEL  →  Traces  →  REFLECTIVE DISTILL  →  SKILL.md  →  WEAK MODEL  →  +40% score
+```
+
+---
 
 ## Install
 
-```bash
-pip install d-skill-forge
-```
-
-Or with [uv](https://docs.astral.sh/uv/):
+### macOS / Linux
 
 ```bash
-uv add d-skill-forge
+curl -fsSL https://raw.githubusercontent.com/d-init-d/d-skill-forge/main/install.sh | bash
 ```
 
-## Quickstart
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/d-init-d/d-skill-forge/main/install.ps1 | iex
+```
+
+### From source (with pip)
 
 ```bash
-# Scaffold a project
-skillforge init demo && cd demo
-
-# Run tasks against a model (mock = no API key needed)
-skillforge run --provider mock --corpus tasks.yaml
-
-# Extract a skill from the traces
-skillforge extract --run runs/<id> --provider mock --out skills/demo/SKILL.md
-
-# Evaluate: does the skill help a weaker model?
-skillforge eval --skill skills/demo/SKILL.md --corpus tasks.yaml --provider mock --weak-model mock-weak
-
-# Validate the skill format
-skillforge lint skills/demo/SKILL.md
-
-# Check provider configuration
-skillforge doctor
+pip install d-skill-forge[tui]
 ```
 
-## Contrastive Extraction
+---
 
-Compare strong vs weak model traces to extract targeted skills:
+## Usage
 
 ```bash
-# Run both models on the same corpus
-skillforge run --provider anthropic --model claude-opus-4 --corpus tasks.yaml
-skillforge run --provider anthropic --model claude-haiku-3 --corpus tasks.yaml
-
-# Extract what the strong model does differently
-skillforge extract --strategy contrastive \
-  --strong-run runs/<strong-id> \
-  --weak-run runs/<weak-id> \
-  --provider anthropic --model claude-opus-4 \
-  --out skills/SKILL.md
+dskillforge
 ```
 
-## Eval with Bootstrap CI
+That's it. The TUI launches automatically.
 
-Measure skill impact with statistical confidence:
+### TUI Features
+
+| Key | Action |
+|-----|--------|
+| `c` | Connect a provider |
+| `m` | Select model |
+| `1` | Run corpus |
+| `2` | Extract skill |
+| `3` | Evaluate |
+| `4` | Lint |
+| `Tab` | Next step |
+| `q` | Quit |
+
+### CLI Mode
 
 ```bash
-skillforge eval --skill skills/SKILL.md --corpus tasks.yaml \
-  --provider mock --weak-model mock-weak --bootstrap 1000
+# Run without TUI
+dskillforge run --provider groq --model llama-3.3-70b-versatile --corpus tasks.yaml
+dskillforge extract --run runs/<id> --provider groq --out skills/SKILL.md
+dskillforge eval --skill skills/SKILL.md --corpus tasks.yaml --provider mock
+dskillforge lint skills/SKILL.md
 ```
 
-Example output:
+---
 
-```
-┌─────────────────┬────────┐
-│ Metric          │ Value  │
-├─────────────────┼────────┤
-│ Baseline score  │ 0.400  │
-│ With skill      │ 0.800  │
-│ Delta           │ +0.400 │
-│ Tasks evaluated │ 5      │
-└─────────────────┴────────┘
+## Providers (15+)
 
-Bootstrap (1000 resamples, 95% CI):
-  delta = +0.4000  95% CI [+0.2000, +0.6000]
-  Wins: 4 | Losses: 0 | Ties: 1
-  Verdict: SIGNIFICANT
-```
+| Provider | Type | Auth |
+|----------|------|------|
+| Anthropic | Built-in | `ANTHROPIC_API_KEY` |
+| OpenAI | Built-in | `OPENAI_API_KEY` |
+| Groq | Preset | `GROQ_API_KEY` |
+| DeepSeek | Preset | `DEEPSEEK_API_KEY` |
+| Together AI | Preset | `TOGETHER_API_KEY` |
+| Fireworks AI | Preset | `FIREWORKS_API_KEY` |
+| OpenRouter | Preset | `OPENROUTER_API_KEY` |
+| xAI (Grok) | Preset | `XAI_API_KEY` |
+| NVIDIA | Preset | `NVIDIA_API_KEY` |
+| Cerebras | Preset | `CEREBRAS_API_KEY` |
+| Amazon Bedrock | Built-in | AWS credentials |
+| Google Gemini | Built-in | `GOOGLE_API_KEY` |
+| Ollama | Local | (none) |
+| LM Studio | Local | (none) |
+| Any OpenAI-compatible | Custom | configurable |
 
-## Provider Matrix
+Connect in TUI: press `c` → select provider → paste key → done.
 
-| Provider | Install | Env Var |
-|----------|---------|---------|
-| anthropic | included | `ANTHROPIC_API_KEY` |
-| openai | included | `OPENAI_API_KEY` |
-| bedrock | `pip install d-skill-forge[bedrock]` | AWS credentials |
-| gemini | `pip install d-skill-forge[gemini]` | `GOOGLE_API_KEY` |
-| mock | included | (none) |
+---
 
-## With a real provider
+## How It Works
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-skillforge run --provider anthropic --model claude-opus-4 --corpus tasks.yaml
+# 1. Init a project
+dskillforge init demo && cd demo
+
+# 2. Run tasks against a strong model
+dskillforge run --provider anthropic --model claude-opus-4 --corpus tasks.yaml
+
+# 3. Extract a skill from the traces
+dskillforge extract --run runs/<id> --provider anthropic --out skills/SKILL.md
+
+# 4. Evaluate: does the skill help a weaker model?
+dskillforge eval --skill skills/SKILL.md --corpus tasks.yaml --provider anthropic --weak-model claude-haiku-4
+
+# 5. Validate
+dskillforge lint skills/SKILL.md
 ```
+
+### Output: SKILL.md
+
+```markdown
+---
+name: python-debug
+description: Fix common Python runtime errors
+version: 1.0.0
+source_model: claude-opus-4
+triggers: [TypeError, AttributeError, KeyError]
+domains: [python, debugging]
+---
+
+## Strategy
+When encountering a Python error...
+
+## Examples
+...
+```
+
+---
+
+## Quick Demo (no API key needed)
+
+```bash
+dskillforge init demo && cd demo
+dskillforge run --provider mock --corpus tasks.yaml
+dskillforge extract --run runs/<id> --provider mock --out skills/demo/SKILL.md
+dskillforge eval --skill skills/demo/SKILL.md --corpus tasks.yaml --provider mock
+```
+
+---
 
 ## Documentation
 
-- [Quickstart](docs/quickstart.md)
+- [TUI Guide](docs/tui.md)
+- [Providers](docs/providers.md)
+- [Authentication](docs/auth.md)
 - [Concepts](docs/concepts.md)
 - [Architecture](docs/architecture.md)
-- [Extractors](docs/extractors.md)
-- [Providers](docs/providers.md)
 - [CLI Reference](docs/reference/cli.md)
 
-## Example
+---
 
-See [`examples/python-debug/`](examples/python-debug/) for a complete 15-task corpus covering common Python runtime errors.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

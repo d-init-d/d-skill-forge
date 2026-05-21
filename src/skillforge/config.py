@@ -25,28 +25,56 @@ class ProviderConfig(BaseModel):
     Attributes:
         api_key_env: Name of the environment variable holding the API key.
         default_model: Default model to use for this provider.
+        type: Provider type ("openai-compatible" for custom endpoints).
+        base_url: Base URL for openai-compatible providers.
     """
 
     api_key_env: str | None = None
     default_model: str | None = None
+    type: str | None = None
+    base_url: str | None = None
 
-    def resolve_api_key(self) -> str:
-        """Resolve the API key from the environment.
+    def resolve_api_key(self, provider_id: str | None = None) -> str:
+        """Resolve the API key using auth.json → env var → config fallback.
+
+        Args:
+            provider_id: Provider identifier for auth.json lookup.
 
         Returns:
             The API key value.
 
         Raises:
-            AuthError: If the env var is not set.
+            AuthError: If no key can be resolved.
         """
-        if not self.api_key_env:
-            msg = "No api_key_env configured for this provider"
-            raise AuthError(msg)
-        value = os.environ.get(self.api_key_env)
-        if not value:
-            msg = f"Environment variable {self.api_key_env} is not set"
-            raise AuthError(msg)
-        return value
+        # 1. Try auth.json first
+        if provider_id:
+            from skillforge.auth import AuthStore
+
+            store = AuthStore()
+            key = store.get(provider_id)
+            if key:
+                return key
+
+        # 2. Try environment variable
+        if self.api_key_env:
+            value = os.environ.get(self.api_key_env)
+            if value:
+                return value
+
+        # 3. Try preset env var
+        if provider_id:
+            from skillforge.providers.presets import PRESETS
+
+            preset = PRESETS.get(provider_id)
+            if preset and preset.api_key_env:
+                value = os.environ.get(preset.api_key_env)
+                if value:
+                    return value
+                if not preset.requires_key:
+                    return ""
+
+        msg = f"No API key found for provider '{provider_id or 'unknown'}'"
+        raise AuthError(msg)
 
 
 class ExtractorConfig(BaseModel):

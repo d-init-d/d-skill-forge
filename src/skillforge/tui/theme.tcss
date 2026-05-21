@@ -1,0 +1,112 @@
+/* d-skill-forge TUI theme — Catppuccin Mocha inspired */
+
+Screen {
+    background: #1e1e2e;
+    color: #cdd6f4;
+}
+
+Header {
+    background: #313244;
+    color: #89b4fa;
+}
+
+Footer {
+    background: #313244;
+}
+
+#pipeline-bar {
+    height: 3;
+    background: #313244;
+    padding: 0 2;
+}
+
+.step-active {
+    color: #89b4fa;
+    text-style: bold;
+}
+
+.step-done {
+    color: #a6e3a1;
+}
+
+.step-pending {
+    color: #6c7086;
+}
+
+.step-error {
+    color: #f38ba8;
+}
+
+#status-bar {
+    height: 1;
+    background: #181825;
+    color: #a6adc8;
+    padding: 0 2;
+}
+
+.provider-label {
+    color: #cba6f7;
+}
+
+.cost-label {
+    color: #f9e2af;
+}
+
+.success-text {
+    color: #a6e3a1;
+}
+
+.error-text {
+    color: #f38ba8;
+}
+
+.warning-text {
+    color: #f9e2af;
+}
+
+.accent-text {
+    color: #89b4fa;
+}
+
+Button {
+    margin: 1 2;
+}
+
+Button.primary {
+    background: #89b4fa;
+    color: #1e1e2e;
+}
+
+Button.success {
+    background: #a6e3a1;
+    color: #1e1e2e;
+}
+
+Button.warning {
+    background: #f9e2af;
+    color: #1e1e2e;
+}
+
+DataTable {
+    height: auto;
+    max-height: 20;
+}
+
+Input {
+    margin: 1 0;
+}
+
+OptionList {
+    height: auto;
+    max-height: 15;
+}
+
+ProgressBar {
+    margin: 1 0;
+}
+
+RichLog {
+    height: 1fr;
+    border: solid #313244;
+    padding: 1;
+}

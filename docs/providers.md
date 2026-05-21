@@ -1,5 +1,82 @@
 # Providers
 
+d-skill-forge supports 15+ LLM providers through built-in adapters and an OpenAI-compatible layer.
+
+## Provider Matrix
+
+| Provider | Type | Install | Auth |
+|----------|------|---------|------|
+| Anthropic | Built-in | included | `ANTHROPIC_API_KEY` |
+| OpenAI | Built-in | included | `OPENAI_API_KEY` |
+| Amazon Bedrock | Built-in | `pip install d-skill-forge[bedrock]` | AWS credentials |
+| Google Gemini | Built-in | `pip install d-skill-forge[gemini]` | `GOOGLE_API_KEY` |
+| Mock | Built-in | included | (none) |
+| Groq | Preset | included | `GROQ_API_KEY` |
+| DeepSeek | Preset | included | `DEEPSEEK_API_KEY` |
+| Together AI | Preset | included | `TOGETHER_API_KEY` |
+| Fireworks AI | Preset | included | `FIREWORKS_API_KEY` |
+| OpenRouter | Preset | included | `OPENROUTER_API_KEY` |
+| xAI (Grok) | Preset | included | `XAI_API_KEY` |
+| NVIDIA | Preset | included | `NVIDIA_API_KEY` |
+| Cerebras | Preset | included | `CEREBRAS_API_KEY` |
+| Ollama | Preset (local) | included | (none) |
+| LM Studio | Preset (local) | included | (none) |
+| Custom | OpenAI-compatible | included | configurable |
+
+## Quick Setup
+
+### TUI (recommended)
+
+```bash
+skillforge          # Opens TUI
+# Press 'c' or /connect → select provider → paste key
+```
+
+### CLI
+
+```bash
+skillforge auth add groq
+skillforge auth test groq
+```
+
+### Environment Variables
+
+```bash
+export GROQ_API_KEY=gsk_...
+skillforge run --provider groq --model llama-3.3-70b-versatile
+```
+
+## Custom Providers
+
+Any OpenAI-compatible endpoint can be added via config:
+
+```toml
+# skillforge.toml
+[providers.my-endpoint]
+type = "openai-compatible"
+base_url = "https://my-company.com/v1"
+api_key_env = "MY_API_KEY"
+default_model = "internal-model-v2"
+```
+
+## Presets
+
+Presets are pre-configured OpenAI-compatible providers. They require only an API key — no base URL or model configuration needed.
+
+Available presets: `groq`, `deepseek`, `together`, `fireworks`, `openrouter`, `xai`, `nvidia`, `cerebras`, `ollama`, `lmstudio`
+
+## Local Models
+
+For Ollama or LM Studio, no API key is needed:
+
+```bash
+# Start Ollama
+ollama serve
+
+# Use in skillforge
+skillforge run --provider ollama --model llama3.2
+```
+
 d-skill-forge supports multiple LLM providers through a pluggable adapter system.
 
 ## Provider Matrix
