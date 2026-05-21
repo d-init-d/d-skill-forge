@@ -8,14 +8,15 @@ from textual.widgets import Static
 
 
 class PipelineBar(Widget):
-    """Horizontal bar showing pipeline steps: Run → Extract → Eval → Lint."""
+    """Horizontal bar showing pipeline steps: Run > Extract > Eval > Lint."""
 
     DEFAULT_CSS = """
     PipelineBar {
         height: 3;
-        background: #313244;
+        background: #141414;
         layout: horizontal;
-        padding: 1 2;
+        padding: 1 3;
+        border-bottom: solid #1a1a1a;
     }
     PipelineBar .step {
         width: 1fr;
@@ -32,13 +33,17 @@ class PipelineBar(Widget):
     def compose(self) -> ComposeResult:
         """Compose step labels."""
         for i, step in enumerate(self.STEPS):
-            label = f"[{i + 1}] {step}"
+            num = str(i + 1)
+            sep = "  >  " if i < len(self.STEPS) - 1 else ""
             if i < self._active:
                 css_class = "step step-done"
+                label = f"{num}. {step}{sep}"
             elif i == self._active:
                 css_class = "step step-active"
+                label = f"{num}. {step}{sep}"
             else:
                 css_class = "step step-pending"
+                label = f"{num}. {step}{sep}"
             yield Static(label, classes=css_class)
 
     def set_active(self, index: int) -> None:

@@ -30,6 +30,13 @@ PRESETS: dict[str, ProviderPreset] = {
     p.id: p
     for p in [
         ProviderPreset(
+            id="kiro",
+            name="Kiro (via kiro-gateway)",
+            base_url="http://localhost:8000/v1",
+            api_key_env="KIRO_PROXY_API_KEY",
+            default_model="claude-sonnet-4-5",
+        ),
+        ProviderPreset(
             id="groq",
             name="Groq",
             base_url="https://api.groq.com/openai/v1",

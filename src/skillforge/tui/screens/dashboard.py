@@ -19,35 +19,37 @@ class DashboardScreen(Screen[None]):
         Binding("2", "step_extract", "Extract"),
         Binding("3", "step_eval", "Eval"),
         Binding("4", "step_lint", "Lint"),
-        Binding("tab", "next_step", "Next Step"),
+        Binding("tab", "next_step", "Next"),
         Binding("c", "connect", "Connect"),
         Binding("m", "models", "Models"),
-        Binding("s", "view_skill", "View Skill"),
+        Binding("s", "view_skill", "Skill"),
     ]
 
     def __init__(self) -> None:
         super().__init__()
         self._active_step = 0
-        self._provider: str = "—"
-        self._model: str = "—"
+        self._provider: str = "-"
+        self._model: str = "-"
 
     def compose(self) -> ComposeResult:
         """Compose dashboard layout."""
         yield PipelineBar(active=self._active_step)
         yield Static(
             "\n"
-            "  [bold]d-skill-forge Dashboard[/bold]\n"
+            "  [bold]Pipeline[/bold]\n"
             "\n"
-            "  Pipeline: [1] Run → [2] Extract → [3] Eval → [4] Lint\n"
+            "  [dim]1[/dim] Run        Execute task corpus against a model\n"
+            "  [dim]2[/dim] Extract    Distill SKILL.md from traces\n"
+            "  [dim]3[/dim] Eval       Measure skill effectiveness\n"
+            "  [dim]4[/dim] Lint       Validate skill format\n"
             "\n"
-            "  Press a number key or Tab to advance through steps.\n"
-            "  Press [cyan]c[/cyan] to connect a provider, [cyan]m[/cyan] to select model.\n",
+            "  [dim]c[/dim] connect    [dim]m[/dim] models    [dim]s[/dim] view skill\n",
             id="dashboard-info",
         )
-        yield Button("▶ Run Corpus", variant="primary", id="btn-run")
-        yield Button("⚗ Extract Skill", variant="success", id="btn-extract")
-        yield Button("📊 Evaluate", variant="warning", id="btn-eval")
-        yield Button("✓ Lint", variant="default", id="btn-lint")
+        yield Button("Run", variant="primary", id="btn-run")
+        yield Button("Extract", variant="success", id="btn-extract")
+        yield Button("Eval", variant="warning", id="btn-eval")
+        yield Button("Lint", id="btn-lint")
         yield StatusBar(provider=self._provider, model=self._model)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -107,7 +109,7 @@ class DashboardScreen(Screen[None]):
         """Open models screen."""
         from skillforge.tui.screens.models import ModelsScreen
 
-        if self._provider and self._provider != "—":
+        if self._provider and self._provider != "-":
             self.app.push_screen(ModelsScreen(self._provider))
         else:
             self.notify("Connect a provider first (press c)", severity="warning")

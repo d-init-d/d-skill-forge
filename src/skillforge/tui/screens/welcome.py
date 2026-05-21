@@ -15,28 +15,23 @@ class WelcomeScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         """Compose welcome layout."""
         yield Static(
+            "\n\n\n"
+            "        d-skill-forge\n"
+            "\n"
+            "        Distill skills from frontier models.\n"
+            "        No fine-tuning required.\n"
             "\n\n"
-            "  ╔══════════════════════════════════════════╗\n"
-            "  ║       🔥 d-skill-forge                   ║\n"
-            "  ║   Skill Distillation Engine              ║\n"
-            "  ╚══════════════════════════════════════════╝\n"
+            "        No providers configured.\n"
             "\n"
-            "  Distill procedural skills from frontier\n"
-            "  model traces into reusable SKILL.md files.\n"
-            "\n"
-            "  No providers configured yet.\n"
-            "  Press [bold cyan]Enter[/] to connect your first provider.\n",
+            "        [dim]Press Enter to connect your first provider.[/dim]\n",
             id="welcome-text",
         )
-        yield Button("Connect Provider", variant="primary", id="btn-connect")
-        yield Button("Quit", variant="default", id="btn-quit")
+        yield Button("Connect", variant="primary", id="btn-connect")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         if event.button.id == "btn-connect":
             self.action_connect()
-        elif event.button.id == "btn-quit":
-            self.app.exit()
 
     def action_connect(self) -> None:
         """Navigate to connect screen."""
