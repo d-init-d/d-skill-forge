@@ -39,7 +39,7 @@ jobs:
           pyinstaller --onefile --name ${{ matrix.asset_name }} --add-data "src/skillforge/tui/theme.tcss:skillforge/tui" src/skillforge/__main__.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.asset_name }}
           path: dist/${{ matrix.asset_name }}
